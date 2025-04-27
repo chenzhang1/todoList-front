@@ -66,7 +66,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+
 import axios from 'axios'
+const baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:8081' : ''
 
 const todoList = ref([])
 const currentPage = ref(1)
@@ -82,7 +85,7 @@ const newTodo = ref({
 const fetchTodos = async (page = 1) => {
   console.log("chakan", page)
   try {
-    const res = await axios.get('http://localhost:8081/todos', {
+    const res = await axios.get(`${baseURL}/todos`, {
       params: {
         page,
         pageSize: pageSize.value,
@@ -100,11 +103,15 @@ const fetchTodos = async (page = 1) => {
 
 const addTodo = async () => {
   if (!newTodo.value.content || !newTodo.value.doTime) {
-    return alert('请输入内容和处理时间')
+    ElMessage({
+      message: '请输入内容和处理时间',
+      type: 'warning',
+    })
+    return 
   }
 
   try {
-    await axios.post('http://localhost:8081/todos', {
+    await axios.post(`${baseURL}/todos`, {
       content: newTodo.value.content,
       done: false,
       doTime: newTodo.value.doTime
@@ -119,7 +126,7 @@ const addTodo = async () => {
 
 const toggleDone = async (item) => {
   try {
-    await axios.put(`http://localhost:8081/todos/${item.id}`, {
+    await axios.put(`${baseURL}/todos/${item.id}`, {
       ...item,
       done: !item.done
     })
@@ -132,7 +139,7 @@ const toggleDone = async (item) => {
 
 const deleteTodo = async (id) => {
   try {
-    await axios.delete(`http://localhost:8081/todos/${id}`)
+    await axios.delete(`${baseURL}/todos/${id}`)
     fetchTodos(currentPage.value)
   } catch (err) {
     console.error('删除失败', err)
